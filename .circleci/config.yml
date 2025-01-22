@@ -1,48 +1,46 @@
 jobs:
   build:
     docker:
-      - image: python:3.6                   # similar to "image" in GitLab
+      - image: python:3.6                   # Docker environment for the build step
     steps:
-      - checkout
-      - run: |                              # similar to "script" in GitLab
-          pip install -r requirements.txt
-          python manage.py check
+      - checkout                            # Check out the code from the repository
+      - run: |
+          pip install -r requirements.txt   # Install Python dependencies
+          python manage.py check            # Run application checks
 
   test:
     docker:
-      - image: python:3.6
+      - image: python:3.6                   # Docker environment for testing
     steps:
       - checkout
       - run: |
-          pip install -r requirements.txt
-          python manage.py test taskManager
+          pip install -r requirements.txt   # Install Python dependencies
+          python manage.py test taskManager # Run tests for "taskManager"
     
   release:
-    machine: true                                        # What is this for?
+    machine: true                           # Use machine executor for Docker tasks
     steps:
       - checkout
 
       - run: |
-          docker build -t $DOCKER_USERNAME/django.nv .   # Build the application into Docker image
-          docker push $DOCKER_USERNAME/django.nv         # Push the image into registry
+          docker build -t $DOCKER_USERNAME/django.nv .   # Build the Docker image
+          docker push $DOCKER_USERNAME/django.nv         # Push the Docker image to the registry
 
   integration:
     docker:
       - image: python:3.6
     steps:
       - checkout
-      - run:
-          command: |
-            echo "This is an integration step"
-            exit 1
-          when: always                    # Even if the job fails, continue to the next stages
+      - run: |
+          echo "This is an integration step"
+          exit 1                            # Simulate a failure for integration testing
 
   prod:
     docker:
       - image: python:3.6
     steps:
       - checkout
-      - run: echo "This is a 'deploy' step."
+      - run: echo "This is a 'deploy' step." # Placeholder for production deployment tasks
 
 workflows:
   version: 2
@@ -50,8 +48,10 @@ workflows:
     jobs:
       - build
       - test
-      - integration
+      - integration:
+          allow_failure: true               # Mark this job as non-blocking even if it fails
       - prod:
-          type: approval
+          type: approval                    # Require manual approval before running
           requires:
-            - integration
+            - build
+            - test                          # Ensure the build and test jobs pass
