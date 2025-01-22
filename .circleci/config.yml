@@ -22,6 +22,7 @@ jobs:
     steps:
       - checkout
       - run: |
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin  # Log in to Docker Hub
           docker build -t $DOCKER_USERNAME/django.nv .   # Build the Docker image
           docker push $DOCKER_USERNAME/django.nv         # Push the Docker image to the registry
 
@@ -47,9 +48,14 @@ workflows:
     jobs:
       - build
       - test
+      - release
+          requires:
+            - build
+            - test                          # Ensure build and test pass before running release
       - integration
+          requires:
+            - release                       # Integration step runs after release
       - prod:
           type: approval                    # Require manual approval before running
           requires:
-            - build
-            - test                          # Ensure the build and test jobs pass
+            - integration                   # Ensure integration runs successfully
