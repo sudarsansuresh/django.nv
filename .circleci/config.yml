@@ -48,11 +48,11 @@ workflows:
     jobs:
       - build
       - test
-      - release
+      - release:
           requires:
             - build
             - test                          # Ensure build and test pass before running release
-      - integration
+      - integration:
           requires:
             - release                       # Integration step runs after release
       - prod:
