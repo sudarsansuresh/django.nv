@@ -48,7 +48,7 @@ jobs:
       - run: echo "This is an integration step"
       - run: exit 1
         continue-on-error: true
-    nuclei-scan:
+  nuclei-scan:
     runs-on: ubuntu-22.04
     needs: test
     steps:
